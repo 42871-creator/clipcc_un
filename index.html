@@ -3,301 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cyberpunk AI Classifier (3s Capture)</title>
+    <title>Teachable Machine Image Model</title>
     
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
+        /* จัดวางทุกอย่างให้อยู่ตรงกลางหน้าจอ ดูสะอาดตา */
         body {
-            font-family: 'Courier New', Courier, monospace, sans-serif;
-            background-color: #0a0a0c;
-            color: #00ff66;
-            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f1f5f9;
+            color: #1e293b;
+            margin: 0;
+            padding: 20px;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            min-height: 100vh;
         }
 
-        .cyber-box {
-            background: #121216;
-            border: 2px solid #00ff66;
-            box-shadow: 0 0 20px rgba(0, 255, 102, 0.2);
-            border-radius: 4px;
-            padding: 30px;
-            width: 100%;
-            max-width: 420px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* ตกแต่งมุมกล่องสไตล์ Sci-Fi */
-        .cyber-box::before {
-            content: "SYSTEM: READY";
-            position: absolute;
-            top: 4px;
-            left: 8px;
-            font-size: 0.65rem;
-            color: rgba(0, 255, 102, 0.5);
-        }
-
-        h1 {
-            font-size: 1.3rem;
-            text-align: center;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+        /* หัวข้อหลัก */
+        .title {
+            font-size: 1.4rem;
+            font-weight: 600;
             margin-bottom: 20px;
-            color: #ffffff;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            color: #334155;
         }
 
-        .cyber-btn {
-            background: transparent;
-            color: #00ff66;
-            border: 1px solid #00ff66;
-            padding: 12px;
-            width: 100%;
-            font-family: inherit;
-            font-weight: bold;
-            text-transform: uppercase;
+        /* ปุ่มกดที่ดูทันสมัยขึ้น แต่คงขนาดและหน้าที่เดิมไว้ */
+        .btn-start {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            font-size: 1rem;
+            font-weight: 500;
+            border-radius: 6px;
             cursor: pointer;
-            transition: all 0.2s ease;
-            letter-spacing: 1px;
+            transition: background-color 0.2s;
+            margin-bottom: 20px;
         }
 
-        .cyber-btn:hover {
-            background: #00ff66;
-            color: #0a0a0c;
-            box-shadow: 0 0 15px rgba(0, 255, 102, 0.6);
+        .btn-start:hover {
+            background-color: #1d4ed8;
         }
 
-        .cyber-btn:disabled {
-            border-color: #333;
-            color: #333;
-            background: transparent;
-            box-shadow: none;
+        .btn-start:disabled {
+            background-color: #cbd5e1;
+            color: #94a3b8;
             cursor: not-allowed;
         }
 
-        /* แถบนับถอยหลัง 3 วินาทีด้านบนกล้อง */
-        .timer-track {
-            width: 200px;
-            height: 4px;
-            background: #222;
-            margin: 20px auto 4px auto;
-            border-radius: 2px;
-            overflow: hidden;
-            display: none;
-        }
-
-        .timer-bar {
-            height: 100%;
-            width: 100%;
-            background: #00f0ff;
-            box-shadow: 0 0 8px #00f0ff;
-            /* อนิเมชั่นลดแถบเวลาถอยหลังแบบละมุน */
-            transition: width 3s linear; 
-        }
-
-        .camera-viewport {
+        /* กล่องใส่กล้องทรงเดิม (200x200) ไม่ปรับรูปทรงอื่น */
+        #webcam-container {
             width: 200px;
             height: 200px;
-            margin: 0 auto 20px auto;
-            border: 1px dashed #00ff66;
-            background: #181820;
+            margin-bottom: 20px;
+            background-color: #e2e8f0;
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
+            border-radius: 4px; /* คงความเหลี่ยมแบบเดิมไว้ */
         }
 
-        .camera-viewport canvas {
-            width: 100% !important;
-            height: 100% !important;
-            object-fit: cover;
+        /* กล่องแสดงข้อความผลลัพธ์ จัดให้เป็นระเบียบอ่านง่าย */
+        #label-container {
+            width: 200px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            background: #ffffff;
+            padding: 12px;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
-        .scan-line {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: rgba(0, 255, 102, 0.4);
-            box-shadow: 0 0 8px #00ff66;
-            animation: scan 2s infinite linear;
-            display: none;
-            pointer-events: none;
-        }
-
-        @keyframes scan {
-            0% { top: 0%; }
-            50% { top: 100%; }
-            100% { top: 0%; }
-        }
-
-        .data-display {
-            background: #15151c;
-            border-left: 3px solid #00f0ff;
-            padding: 15px;
-            display: none;
-        }
-
-        .data-row {
-            margin-bottom: 12px;
-        }
-
-        .data-row:last-child {
-            margin-bottom: 0;
-        }
-
-        .data-text {
+        .label-item {
             display: flex;
             justify-content: space-between;
-            font-size: 0.8rem;
-            margin-bottom: 5px;
-            color: #00f0ff;
+            border-bottom: 1px solid #f1f5f9;
+            padding: 4px 0;
         }
 
-        .matrix-track {
-            background: #222;
-            height: 6px;
-        }
-
-        .matrix-fill {
-            height: 100%;
-            width: 0%;
-            background: #00f0ff;
-            box-shadow: 0 0 6px #00f0ff;
-            transition: width 0.3s ease;
+        .label-item:last-child {
+            border-bottom: none;
         }
     </style>
 </head>
 <body>
 
-<div class="cyber-box">
-    <h1>[ CORE_CLASSIFIER ]</h1>
-    
-    <button type="button" class="cyber-btn" id="init-btn" onclick="bootSystem()">ENGAGE CORE</button>
-    
-    <!-- แถบเวลาถอยหลัง -->
-    <div class="timer-track" id="t-track">
-        <div class="timer-bar" id="t-bar"></div>
-    </div>
+<div class="title">Teachable Machine Image Model</div>
 
-    <div class="camera-viewport">
-        <div class="scan-line" id="scanner"></div>
-        <div id="webcam-node" style="font-size: 0.75rem; color: #444;">[ OFFLINE ]</div>
-    </div>
-    
-    <div class="data-display" id="log-display">
-        <!-- ผลลัพธ์โมเดลจะเจาะเข้ามาตรงนี้ -->
-    </div>
-</div>
+<button type="button" class="btn-start" id="start-btn" onclick="init()">Start</button>
 
-<!-- Scripts -->
+<!-- กล่องใส่กล้องขนาดเดิม ทรงเดิมเป๊ะๆ -->
+<div id="webcam-container"></div>
+
+<!-- กล่องแสดงตัวหนังสือผลลัพธ์ -->
+<div id="label-container"></div>
+
+<!-- เรียกใช้สคริปต์จากไฟล์เดิมของคุณ[cite: 2] -->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
 
 <script type="text/javascript">
-    const MODEL_URL = "https://teachablemachine.withgoogle.com/models/XJJUyhxtL/";[cite: 2]
+    // ลิงก์โมเดลเดิมของคุณเป๊ะๆ[cite: 2]
+    const URL = "https://teachablemachine.withgoogle.com/models/XJJUyhxtL/";[cite: 2]
 
-    let netModel, camFeed, classCount;
+    let model, webcam, labelContainer, maxPredictions;
+    let predictInterval; 
 
-    async function bootSystem() {
-        const btn = document.getElementById("init-btn");
-        btn.disabled = true;
-        btn.innerText = "LOADING CORE...";
+    async function init() {
+        // ปิดปุ่มเพื่อป้องกันการกดซ้ำระหว่างโหลด
+        document.getElementById("start-btn").disabled = true;
 
-        try {
-            // โหลดโมเดล
-            netModel = await tmImage.load(MODEL_URL + "model.json", MODEL_URL + "metadata.json");[cite: 2]
-            classCount = netModel.getTotalClasses();[cite: 2]
+        const modelURL = URL + "model.json";
+        const metadataURL = URL + "metadata.json";
 
-            // เปิดกล้อง
-            camFeed = new tmImage.Webcam(200, 200, true);[cite: 2]
-            await camFeed.setup();[cite: 2]
-            await camFeed.play();[cite: 2]
+        // โหลดโมเดล
+        model = await tmImage.load(modelURL, metadataURL);
+        maxPredictions = model.getTotalClasses();[cite: 2]
 
-            // ฝังกล้องและเปิดเอฟเฟกต์ไซไฟ
-            const node = document.getElementById("webcam-node");
-            node.innerHTML = "";
-            node.appendChild(camFeed.canvas);[cite: 2]
-            
-            document.getElementById("scanner").style.display = "block";
-            document.getElementById("t-track").style.display = "block";
-            btn.innerText = "SYSTEM ACTIVE";
+        // ตั้งค่ากล้องทรงเดิม ขนาดเดิม (200x200)[cite: 2]
+        const flip = true; 
+        webcam = new tmImage.Webcam(200, 200, flip);[cite: 2]
+        await webcam.setup();[cite: 2]
+        await webcam.play();[cite: 2]
 
-            buildLogUI();
-            
-            // สั่งรันวิเคราะห์รอบแรก
-            triggerPulse();
-
-        } catch (e) {
-            console.error(e);
-            btn.disabled = false;
-            btn.innerText = "RETRY CORE";
-        }
-    }
-
-    function buildLogUI() {
-        const display = document.getElementById("log-display");
-        display.innerHTML = "";
-        display.style.display = "block";
-
-        for (let i = 0; i < classCount; i++) {[cite: 2]
-            const row = document.createElement("div");
-            row.className = "data-row";
-            row.innerHTML = `
-                <div class="data-text">
-                    <span class="c-name">ANALYZING...</span>
-                    <span class="c-val">0%</span>
-                </div>
-                <div class="matrix-track">
-                    <div class="matrix-fill"></div>
-                </div>
-            `;
-            display.appendChild(row);
-        }
-    }
-
-    // ฟังก์ชันรันลูปการคำนวณและทำอนิเมชั่นถอยหลัง 3 วินาที
-    async function triggerPulse() {
-        // รีเซ็ตแถบเวลากลับไปเต็มร้อยทันที
-        const bar = document.getElementById("t-bar");
-        bar.style.transition = "none";
-        bar.style.width = "100%";
+        // ใส่กล้องลงในกล่องเดิม[cite: 2]
+        document.getElementById("webcam-container").appendChild(webcam.canvas);[cite: 2]
         
-        // บังคับให้เบราว์เซอร์รับรู้การเคลียร์สไตล์ก่อนเริ่มนับถอยหลังใหม่
-        bar.offsetHeight; 
-
-        // เริ่มต้นหดแถบเวลาถอยหลังในเวลา 3 วินาที (3000ms)
-        bar.style.transition = "width 3s linear";
-        bar.style.width = "0%";
-
-        // ถ่ายรูปเฟรมปัจจุบันและวิเคราะห์[cite: 2]
-        if (camFeed) {
-            camFeed.update();[cite: 2]
-            const reports = await netModel.predict(camFeed.canvas);[cite: 2]
-            const rows = document.getElementById("log-display").childNodes;
-
-            for (let i = 0; i < classCount; i++) {[cite: 2]
-                const name = reports[i].className;[cite: 2]
-                const probability = reports[i].probability;[cite: 2]
-                const pct = (probability * 100).toFixed(0) + "%";
-
-                rows[i].querySelector(".c-name").innerText = `> ${name}`;
-                rows[i].querySelector(".c-val").innerText = pct;
-                rows[i].querySelector(".matrix-fill").style.width = pct;
-            }
+        // เตรียมพื้นที่แสดงข้อความ
+        labelContainer = document.getElementById("label-container");
+        labelContainer.innerHTML = ""; 
+        for (let i = 0; i < maxPredictions; i++) {[cite: 2]
+            const div = document.createElement("div");
+            div.className = "label-item";
+            labelContainer.appendChild(div);[cite: 2]
         }
 
-        // ใช้ setTimeout วิ่งซ้ำแทน setInterval เพื่อให้ Sync สอดคล้องกับตัวบาร์เวลาถอยหลัง
-        setTimeout(triggerPulse, 3000);
+        // เรียกทำงานทันที 1 ครั้งเมื่อเปิดกล้องสำเร็จ
+        updateAndPredict();
+
+        // สั่งให้กล้องอัปเดตภาพและทำนายผลทุกๆ 3 วินาที (3000 มิลลิวินาที) แทน Loop เดิม[cite: 2]
+        predictInterval = setInterval(updateAndPredict, 3000);
+    }
+
+    // ฟังก์ชันที่จะทำงานทุกๆ 3 วินาทีตามที่ตั้งเวลาไว้
+    async function updateAndPredict() {
+        if (webcam) {
+            webcam.update(); // ดึงเฟรมภาพจากกล้อง ณ วินาทีนั้น[cite: 2]
+            await predict(); // ส่งไปทำนายผล
+        }
+    }
+
+    // ฟังก์ชันประมวลผลและแสดงข้อความเปอร์เซ็นต์
+    async function predict() {
+        const prediction = await model.predict(webcam.canvas);[cite: 2]
+        for (let i = 0; i < maxPredictions; i++) {[cite: 2]
+            // แสดงผลเป็น "ชื่อคลาส" และ "เปอร์เซ็นต์ความมั่นใจ" แบบข้อความที่อ่านง่ายขึ้น
+            const className = prediction[i].className;[cite: 2]
+            const probability = (prediction[i].probability * 100).toFixed(0) + "%";
+            
+            labelContainer.childNodes[i].innerHTML = `
+                <span style="font-weight: 500;">${className}</span>
+                <span style="color: #2563eb; font-weight: bold;">${probability}</span>
+            `;
+        }
     }
 </script>
 
