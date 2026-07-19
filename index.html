@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teachable Machine Image Model</title>
+    <title>Teachable Machine Smooth Live</title>
     
     <style>
         :root {
@@ -65,6 +65,7 @@
             transform: none;
         }
 
+        /* กล่องแสดงผลหน้าจอกล้องสี่เหลี่ยมจัตุรัสขนาด 200x200 เท่าเดิม */
         #webcam-container {
             width: 200px;
             height: 200px;
@@ -78,7 +79,7 @@
             overflow: hidden;
         }
 
-        #webcam-container canvas {
+        #display-canvas {
             width: 100% !important;
             height: 100% !important;
             object-fit: cover;
@@ -127,9 +128,15 @@
 
 <button type="button" class="btn-start" id="start-btn" onclick="init()">Start Camera</button>
 
-<div id="webcam-container"></div>
+<!-- หน้าจอแสดงผล Canvas หลักที่จะดึงภาพวิดีโอมาวาด ปลอดภัยต่อเงื่อนไขเบราว์เซอร์แน่นอน -->
+<div id="webcam-container">
+    <canvas id="display-canvas" width="200" height="200"></canvas>
+</div>
 
 <div id="label-container"></div>
+
+<!-- แอบซ่อนแท็กวิดีโอสตรีมสดเอาไว้เบื้องหลังเพื่อดักจับภาพแบบราบรื่น -->
+<video id="hidden-video" autoplay playsinline muted style="display:none;"></video>
 
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
@@ -137,27 +144,29 @@
 <script type="text/javascript">
     const URL = "https://teachablemachine.withgoogle.com/models/XJJUyhxtL/";[cite: 3]
 
-    let model, webcam, labelContainer, maxPredictions;
-    let lastPredictTime = 0; 
+    let model, maxPredictions, labelContainer;
+    let videoElement = document.getElementById("hidden-video");
+    let canvasElement = document.getElementById("display-canvas");
+    let ctx = canvasElement.getContext("2d");
+    let lastPredictTime = 0;
 
     async function init() {
         document.getElementById("start-btn").disabled = true;
         document.getElementById("start-btn").innerText = "Loading...";
 
-        const modelURL = URL + "model.json";[cite: 3]
-        const metadataURL = URL + "metadata.json";[cite: 3]
-
         try {
-            model = await tmImage.load(modelURL, metadataURL);[cite: 3]
+            // 1. โหลดโมเดลโครงสร้างเดิมของคุณ
+            model = await tmImage.load(URL + "model.json", URL + "metadata.json");[cite: 3]
             maxPredictions = model.getTotalClasses();[cite: 3]
 
-            const flip = true; 
-            webcam = new tmImage.Webcam(200, 200, flip);[cite: 3]
-            await webcam.setup();[cite: 3]
-            await webcam.play();[cite: 3]
+            // 2. เรียกใช้งานกล้องผ่าน Native Web API เพื่อข้ามผ่านตัวบล็อกของ Chrome
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { width: 200, height: 200, facingMode: "user" },
+                audio: false
+            });
+            videoElement.srcObject = stream;
 
-            document.getElementById("webcam-container").appendChild(webcam.canvas);[cite: 3]
-            
+            // 3. จัดเตรียมกล่องข้อความ
             labelContainer = document.getElementById("label-container");
             labelContainer.innerHTML = ""; 
             for (let i = 0; i < maxPredictions; i++) {[cite: 3]
@@ -167,30 +176,42 @@
             }
 
             document.getElementById("start-btn").innerText = "System Active";
-            window.requestAnimationFrame(loop);[cite: 3]
+            
+            // เริ่มต้นวาดเฟรมกล้องสดทันที
+            window.requestAnimationFrame(renderLoop);[cite: 3]
 
         } catch (error) {
             console.error(error);
-            alert("เกิดข้อผิดพลาดในการเปิดกล้อง");
+            alert("ไม่สามารถเปิดกล้องได้ กรุณาตรวจสอบการอนุญาตสิทธิ์เข้าถึงกล้องของคุณ");
             document.getElementById("start-btn").disabled = false;
             document.getElementById("start-btn").innerText = "Start Camera";
         }
     }
 
-    async function loop() {
-        webcam.update();[cite: 3]
-        
-        const currentTime = Date.now();
-        if (currentTime - lastPredictTime >= 3000) {
-            await predict(); 
-            lastPredictTime = currentTime; 
+    // วนลูปวาดภาพวิดีโอลงบนหน้าจอให้ลื่นไหล (60 FPS ชัวร์ จอไม่ขาวแน่นอน)
+    async function renderLoop() {
+        if (videoElement.readyState === videoElement.HAVE_ENOUGH_DATA) {
+            // วาดภาพจากสตรีมสดลงบน Canvas พร้อมทำการกลับด้านซ้ายขวาให้เป็นธรรมชาติเหมือนกระจกเงา
+            ctx.save();
+            ctx.translate(canvasElement.width, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+            ctx.restore();
+
+            // ดักจับเวลา: ส่งภาพไปตรวจจับกับ AI ทุก ๆ 3 วินาที (3000 มิลลิวินาที)
+            const currentTime = Date.now();
+            if (currentTime - lastPredictTime >= 3000) {
+                lastPredictTime = currentTime; 
+                await predict(); 
+            }
         }
-        
-        window.requestAnimationFrame(loop);[cite: 3]
+        window.requestAnimationFrame(renderLoop);[cite: 3]
     }
 
+    // ฟังก์ชันส่งภาพไปประมวลผล
     async function predict() {
-        const prediction = await model.predict(webcam.canvas);[cite: 3]
+        // ส่งหน้าจอ canvas ปัจจุบันไปให้ AI ประมวลผลทำนายผลลัพธ์ทันที
+        const prediction = await model.predict(canvasElement);[cite: 3]
         for (let i = 0; i < maxPredictions; i++) {[cite: 3]
             const className = prediction[i].className;[cite: 3]
             const probability = (prediction[i].probability * 100).toFixed(0) + "%";
