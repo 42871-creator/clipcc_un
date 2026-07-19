@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teachable Machine - Modern Smooth Style</title>
+    <title>Teachable Machine - Modern Style</title>
     
     <style>
-        /* รูปแบบสีสันสดใส สไตล์โมเดิร์นพาสเทล น่าใช้งาน */
+        /* กำหนดธีมสีพาสเทลและฟอนต์ที่อ่านง่าย */
         :root {
-            --bg-gradient: linear-gradient(135deg, #6ee7b7 0%, #3b82f6 100%);
+            --bg-gradient: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
             --card-bg: #ffffff;
-            --text-main: #1e293b;
-            --btn-color: #ec4899;
-            --btn-hover: #db2777;
+            --text-main: #334155;
+            --primary-color: #3b82f6;
+            --primary-hover: #2563eb;
         }
 
         body {
@@ -28,80 +28,80 @@
             min-height: 100vh;
         }
 
+        /* หัวข้อเว็บ */
         .title {
             font-size: 1.6rem;
             font-weight: bold;
-            color: #ffffff;
-            text-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            margin-bottom: 24px;
+            color: #1e3a8a;
+            margin-bottom: 20px;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
+            letter-spacing: 1px;
         }
 
-        /* ปุ่มกดดีไซน์มนโค้ง สดใสเด่นชัด */
+        /* ปุ่มกดดีไซน์โมเดิร์น */
         .btn-start {
-            background-color: var(--btn-color);
+            background-color: var(--primary-color);
             color: white;
             border: none;
-            padding: 14px 40px;
+            padding: 12px 36px;
             font-size: 1.1rem;
             font-weight: bold;
             border-radius: 50px;
             cursor: pointer;
-            box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
             transition: all 0.2s ease;
             margin-bottom: 24px;
         }
 
         .btn-start:hover {
-            background-color: var(--btn-hover);
+            background-color: var(--primary-hover);
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(236, 72, 153, 0.6);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
         }
 
-        .btn-start:disabled {
-            background-color: #cbd5e1;
-            color: #94a3b8;
-            box-shadow: none;
-            cursor: not-allowed;
-            transform: none;
+        .btn-start:active {
+            transform: translateY(0);
         }
 
-        /* รูปแบบกล่องกล้องใหม่: ล็อกขนาดสี่เหลี่ยมจัตุรัส 200x200 เท่าเดิม แต่เพิ่มขอบมนให้น่ารักขึ้น */
-        .camera-wrapper {
+        /* กล่องใส่กล้องเว็บแคม (ขนาด 200x200 เท่าเดิม) */
+        #webcam-container {
             width: 200px;
             height: 200px;
-            background-color: #000000;
-            border-radius: 24px;
+            background-color: #f8fafc;
+            border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
             margin-bottom: 24px;
             border: 4px solid #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* แท็กวิดีโอรูปแบบใหม่ เปิดกล้องสดได้เสถียรที่สุด ไม่ขึ้นกล่องขาว */
-        #webcam-video {
-            width: 100%;
-            height: 100%;
+        /* บังคับให้ภาพ Canvas เต็มกล่องพอดี */
+        #webcam-container canvas {
+            width: 100% !important;
+            height: 100% !important;
             object-fit: cover;
-            transform: scaleX(-1); /* กลับด้านซ้ายขวาให้เหมือนกระจกเงาธรรมชาติ */
         }
 
-        /* กล่องแสดงผลลัพธ์การทำนาย */
+        /* กล่องแสดงผลลัพธ์ */
         #label-container {
-            width: 200px;
+            width: 220px;
             background: var(--card-bg);
             padding: 16px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
         }
 
+        /* จัดแต่งแถบแสดงคลาสย่อย */
         .label-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid #f1f5f9;
             padding: 8px 0;
+            font-size: 1rem;
         }
 
         .label-item:last-child {
@@ -109,16 +109,16 @@
         }
 
         .class-name {
-            font-weight: bold;
+            font-weight: 600;
             color: #475569;
         }
 
         .class-prob {
-            font-weight: 800;
-            color: #2563eb;
+            font-weight: bold;
+            color: var(--primary-color);
             background-color: #eff6ff;
-            padding: 3px 10px;
-            border-radius: 30px;
+            padding: 2px 8px;
+            border-radius: 20px;
             font-size: 0.9rem;
         }
     </style>
@@ -127,50 +127,51 @@
 
 <div class="title">Teachable Machine Image Model</div>
 
-<button type="button" class="btn-start" id="start-btn" onclick="init()">Start Camera</button>
+<!-- เปลี่ยนเป็นปุ่มแบบมี ID เพื่อจัดสไตล์ง่ายขึ้น -->
+<button type="button" class="btn-start" id="start-btn" onclick="init()">Start System</button>
 
-<!-- รูปแบบพื้นที่แสดงผลกล้องแบบใหม่ที่เสถียรและราบรื่นที่สุด -->
-<div class="camera-wrapper">
-    <video id="webcam-video" autoplay playsinline muted></video>
-</div>
+<!-- พื้นที่แสดงกล้องเว็บแคม -->
+<div id="webcam-container"></div>
 
-<!-- กล่องแสดงข้อความผลลัพธ์ -->
+<!-- พื้นที่แสดงผลลัพธ์การทำนาย -->
 <div id="label-container"></div>
 
-<!-- เรียกใช้งานคลังไลบรารีดั้งเดิมของคุณ -->
+<!-- เรียกใช้ไลบรารีตามต้นฉบับของคุณ -->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
 
 <script type="text/javascript">
-    // ลิงก์โมเดลเดิมของคุณ[cite: 4]
+    // ลิงก์โมเดลเดิมของคุณ
     const URL = "https://teachablemachine.withgoogle.com/models/XJJUyhxtL/";[cite: 4]
 
-    let model, maxPredictions, labelContainer;
-    const videoElement = document.getElementById("webcam-video");
-    let predictInterval = null;
+    let model, webcam, labelContainer, maxPredictions;
 
     async function init() {
         const btn = document.getElementById("start-btn");
         btn.disabled = true;
-        btn.innerText = "Connecting...";
+        btn.innerText = "Loading...";
+
+        const modelURL = URL + "model.json";[cite: 4]
+        const metadataURL = URL + "metadata.json";[cite: 4]
 
         try {
-            // 1. โหลดโมเดลวิเคราะห์ภาพจากระบบของ Teachable Machine[cite: 4]
-            model = await tmImage.load(URL + "model.json", URL + "metadata.json");[cite: 4]
+            // โหลดโมเดลและเมทาดาตา[cite: 4]
+            model = await tmImage.load(modelURL, metadataURL);[cite: 4]
             maxPredictions = model.getTotalClasses();[cite: 4]
 
-            // 2. รูปแบบการเปิดกล้องใหม่: เรียกผ่านเบราว์เซอร์โดยตรง (Native WebRTC) ป้องกันปัญหากล่องขาว
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: { width: 200, height: 200, facingMode: "user" },
-                audio: false
-            });
-            
-            // ส่งสัญญาณภาพสดตรงเข้าสู่แท็กวิดีโอทันที
-            videoElement.srcObject = stream;
+            // ตั้งค่ากล้องเว็บแคม (ขนาด 200x200 และกลับด้านซ้ายขวา)[cite: 4]
+            const flip = true;[cite: 4]
+            webcam = new tmImage.Webcam(200, 200, flip);[cite: 4]
+            await webcam.setup();[cite: 4]
+            await webcam.play();[cite: 4]
+            window.requestAnimationFrame(loop);[cite: 4]
 
-            // 3. จัดเตรียมกล่องข้อความอัปเดตเปอร์เซ็นต์[cite: 4]
+            // นำตัวเล่นกล้องไปใส่ใน DOM[cite: 4]
+            document.getElementById("webcam-container").appendChild(webcam.canvas);[cite: 4]
+            
+            // เตรียมพื้นที่แสดงผลสำหรับแต่ละคลาส[cite: 4]
             labelContainer = document.getElementById("label-container");
-            labelContainer.innerHTML = "";
+            labelContainer.innerHTML = ""; // ล้างข้อมูลเก่า (ถ้ามี)
             for (let i = 0; i < maxPredictions; i++) {[cite: 4]
                 const div = document.createElement("div");
                 div.className = "label-item";
@@ -179,37 +180,32 @@
 
             btn.innerText = "System Active";
 
-            // 4. สั่งให้ AI แอบมาดึงภาพเฟรมปัจจุบันจากวิดีโอไปทำนายผลลัพธ์ "ทุก ๆ 3 วินาที" (3000 มิลลิวินาที)
-            predictInterval = setInterval(predict, 3000);
-            
-            // สั่งคำนวณรอบแรกทันที
-            setTimeout(predict, 500);
-
         } catch (error) {
-            console.error("Camera Error:", error);
-            alert("ไม่สามารถเปิดกล้องได้ กรุณาคลิกที่ไอคอนตั้งค่าหน้าชื่อเว็บเพื่ออนุญาตสิทธิ์เข้าถึงกล้อง (Allow Camera)");
+            console.error(error);
+            alert("ไม่สามารถเปิดกล้องได้ กรุณาตรวจสอบการอนุญาตให้เข้าถึงกล้องถ่ายรูป");
             btn.disabled = false;
-            btn.innerText = "Start Camera";
+            btn.innerText = "Start System";
         }
     }
 
-    // ฟังก์ชันส่งภาพวิดีโอสดไปให้ AI ประมวลผลลัพธ์
+    async function loop() {
+        webcam.update();[cite: 4]
+        await predict();[cite: 4]
+        window.requestAnimationFrame(loop);[cite: 4]
+    }
+
     async function predict() {
-        // ดักจับว่าสัญญาณภาพวิดีโอสดพร้อมให้วิเคราะห์หรือยัง
-        if (videoElement.readyState === videoElement.HAVE_ENOUGH_DATA) {
-            // โมเดลสามารถรับแท็กวิดีโอมาตรฐานไปทำนายตรง ๆ ได้ทันที[cite: 4]
-            const prediction = await model.predict(videoElement);[cite: 4]
+        const prediction = await model.predict(webcam.canvas);[cite: 4]
+        for (let i = 0; i < maxPredictions; i++) {[cite: 4]
+            const className = prediction[i].className;[cite: 4]
+            // แปลงค่าความน่าจะเป็นให้อยู่ในรูปเปอร์เซ็นต์แบบไม่มีทศนิยมเพื่อให้ดูง่าย
+            const probability = (prediction[i].probability * 100).toFixed(0) + "%";
             
-            for (let i = 0; i < maxPredictions; i++) {[cite: 4]
-                const className = prediction[i].className;[cite: 4]
-                const probability = (prediction[i].probability * 100).toFixed(0) + "%";
-                
-                // จัดเรียงฟอนต์และสีสันให้แยกสัดส่วนสวยงาม สบายตา
-                labelContainer.childNodes[i].innerHTML = `
-                    <span class="class-name">${className}</span>
-                    <span class="class-prob">${probability}</span>
-                `;
-            }
+            // แสดงผลลัพธ์แยกชื่อคลาสและเปอร์เซ็นต์ซ้าย-ขวาอย่างสวยงาม
+            labelContainer.childNodes[i].innerHTML = `
+                <span class="class-name">${className}</span>
+                <span class="class-prob">${probability}</span>
+            `;
         }
     }
 </script>
