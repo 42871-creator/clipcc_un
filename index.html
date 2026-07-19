@@ -20,7 +20,6 @@
             min-height: 100vh;
         }
 
-        /* หัวข้อหลัก */
         .title {
             font-size: 1.4rem;
             font-weight: 600;
@@ -28,7 +27,6 @@
             color: #334155;
         }
 
-        /* ปุ่มกดที่ดูทันสมัยขึ้น แต่คงขนาดและหน้าที่เดิมไว้ */
         .btn-start {
             background-color: #2563eb;
             color: white;
@@ -52,7 +50,7 @@
             cursor: not-allowed;
         }
 
-        /* กล่องใส่กล้องทรงเดิม (200x200) ไม่ปรับรูปทรงอื่น */
+        /* กล่องใส่กล้องทรงสี่เหลี่ยมจัตุรัสแบบเดิมเป๊ะๆ (200x200) ไม่ปรับรูปทรงอื่น */
         #webcam-container {
             width: 200px;
             height: 200px;
@@ -61,10 +59,18 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 4px; /* คงความเหลี่ยมแบบเดิมไว้ */
+            border-radius: 4px;
         }
 
-        /* กล่องแสดงข้อความผลลัพธ์ จัดให้เป็นระเบียบอ่านง่าย */
+        /* บังคับให้ canvas ของกล้องขยายเต็มพื้นที่กล่อง */
+        #webcam-container canvas {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        /* กล่องแสดงตัวหนังสือผลลัพธ์ จัดให้อ่านง่าย */
         #label-container {
             width: 200px;
             font-size: 0.95rem;
@@ -99,7 +105,7 @@
 <!-- กล่องแสดงตัวหนังสือผลลัพธ์ -->
 <div id="label-container"></div>
 
-<!-- เรียกใช้สคริปต์จากไฟล์เดิมของคุณ[cite: 2] -->
+<!-- เรียกใช้สคริปต์จากไฟล์เดิมของคุณ -->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
 
@@ -108,7 +114,7 @@
     const URL = "https://teachablemachine.withgoogle.com/models/XJJUyhxtL/";[cite: 2]
 
     let model, webcam, labelContainer, maxPredictions;
-    let predictInterval; 
+    let lastPredictTime = 0; // ตัวแปรเก็บเวลาล่าสุดที่ทำการทำนายผล
 
     async function init() {
         // ปิดปุ่มเพื่อป้องกันการกดซ้ำระหว่างโหลด
@@ -130,7 +136,7 @@
         // ใส่กล้องลงในกล่องเดิม[cite: 2]
         document.getElementById("webcam-container").appendChild(webcam.canvas);[cite: 2]
         
-        // เตรียมพื้นที่แสดงข้อความ
+        // เตรียมพื้นที่แสดงข้อความ[cite: 2]
         labelContainer = document.getElementById("label-container");
         labelContainer.innerHTML = ""; 
         for (let i = 0; i < maxPredictions; i++) {[cite: 2]
@@ -139,29 +145,33 @@
             labelContainer.appendChild(div);[cite: 2]
         }
 
-        // เรียกทำงานทันที 1 ครั้งเมื่อเปิดกล้องสำเร็จ
-        updateAndPredict();
-
-        // สั่งให้กล้องอัปเดตภาพและทำนายผลทุกๆ 3 วินาที (3000 มิลลิวินาที) แทน Loop เดิม[cite: 2]
-        predictInterval = setInterval(updateAndPredict, 3000);
+        // เริ่มต้นลูปเพื่อให้กล้องแสดงภาพได้ต่อเนื่องและจับเวลาตรวจจับ[cite: 2]
+        window.requestAnimationFrame(loop);[cite: 2]
     }
 
-    // ฟังก์ชันที่จะทำงานทุกๆ 3 วินาทีตามที่ตั้งเวลาไว้
-    async function updateAndPredict() {
-        if (webcam) {
-            webcam.update(); // ดึงเฟรมภาพจากกล้อง ณ วินาทีนั้น[cite: 2]
-            await predict(); // ส่งไปทำนายผล
+    async function loop() {
+        webcam.update(); // อัปเดตเฟรมภาพอย่างต่อเนื่องเพื่อให้กล้องไม่ค้างและแสดงภาพไหลลื่น[cite: 2]
+        
+        // ตรวจสอบเวลาปัจจุบัน
+        const currentTime = Date.now();
+        
+        // ถ้าเวลาผ่านไปครบ 3000 มิลลิวินาที (3 วินาที) ค่อยส่งภาพไปให้ AI ทำนาย 1 ครั้ง
+        if (currentTime - lastPredictTime >= 3000) {
+            await predict(); // เรียกใช้ฟังก์ชันประมวลผลคำนวณ
+            lastPredictTime = currentTime; // บันทึกเวลาล่าสุดที่ทำนายผลสำเร็จ
         }
+        
+        window.requestAnimationFrame(loop); // วนลูปการทำงานต่อ[cite: 2]
     }
 
     // ฟังก์ชันประมวลผลและแสดงข้อความเปอร์เซ็นต์
     async function predict() {
         const prediction = await model.predict(webcam.canvas);[cite: 2]
         for (let i = 0; i < maxPredictions; i++) {[cite: 2]
-            // แสดงผลเป็น "ชื่อคลาส" และ "เปอร์เซ็นต์ความมั่นใจ" แบบข้อความที่อ่านง่ายขึ้น
             const className = prediction[i].className;[cite: 2]
             const probability = (prediction[i].probability * 100).toFixed(0) + "%";
             
+            // อัปเดตข้อความผลลัพธ์
             labelContainer.childNodes[i].innerHTML = `
                 <span style="font-weight: 500;">${className}</span>
                 <span style="color: #2563eb; font-weight: bold;">${probability}</span>
