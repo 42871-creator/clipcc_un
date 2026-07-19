@@ -3,273 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Radar Scanner - GitHub Pages Fix</title>
-    
+    <title>Teachable Machine Standard Safe Fix</title>
     <style>
-        /* ธีมดาร์กไซเบอร์พังค์ เน้นสีเข้มนีออน */
         :root {
-            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-            --card-bg: rgba(30, 41, 59, 0.7);
-            --text-main: #f8fafc;
-            --neon-cyan: #06b6d4;
-            --neon-pink: #ec4899;
+            --bg-gradient: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+            --card-bg: #ffffff;
+            --text-main: #334155;
+            --primary-color: #2563eb;
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: var(--bg-gradient);
             color: var(--text-main);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            margin: 0; padding: 20px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
             min-height: 100vh;
         }
 
         .title {
-            font-size: 1.5rem;
-            font-weight: 900;
-            color: var(--neon-cyan);
-            text-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
-            margin-bottom: 30px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+            font-size: 1.5rem; font-weight: bold; color: #1e3a8a; margin-bottom: 20px; text-transform: uppercase;
         }
 
-        .btn-start {
-            background: transparent;
-            color: var(--neon-pink);
-            border: 2px solid var(--neon-pink);
-            padding: 12px 36px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            border-radius: 12px;
-            cursor: pointer;
-            box-shadow: 0 0 15px rgba(236, 72, 153, 0.2);
-            transition: all 0.3s ease;
-            margin-bottom: 30px;
-            text-transform: uppercase;
+        .status-badge {
+            background-color: #f1f5f9; color: #64748b; padding: 6px 16px; border-radius: 50px;
+            font-weight: bold; font-size: 0.9rem; margin-bottom: 20px; border: 1px solid #e2e8f0;
         }
 
-        .btn-start:hover {
-            background-color: var(--neon-pink);
-            color: white;
-            box-shadow: 0 0 25px rgba(236, 72, 153, 0.6);
-            transform: scale(1.05);
-        }
-
-        .btn-start:disabled {
-            border-color: #475569;
-            color: #475569;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        /* กล้องทรงวงกลมเรดาร์สแกน */
         #webcam-container {
-            width: 220px;
-            height: 220px;
-            border-radius: 50%;
-            overflow: hidden;
-            box-shadow: 0 0 30px rgba(6, 182, 212, 0.3);
-            margin-bottom: 30px;
-            border: 4px solid var(--neon-cyan);
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #000;
+            width: 200px; height: 200px; background-color: #ffffff; border-radius: 16px;
+            overflow: hidden; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); margin-bottom: 24px;
+            border: 4px solid #ffffff; display: flex; align-items: center; justify-content: center;
         }
 
-        /* เอฟเฟกต์เส้นเรดาร์วิ่งผ่านหน้าจอ */
-        #webcam-container::after {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; height: 3px;
-            background: var(--neon-cyan);
-            box-shadow: 0 0 10px var(--neon-cyan);
-            opacity: 0.7;
-            animation: radar-scan 2.5s linear infinite;
-            pointer-events: none;
-        }
-
-        @keyframes radar-scan {
-            0% { top: 0%; }
-            50% { top: 100%; }
-            100% { top: 0%; }
-        }
-
-        /* ปรับปรุง: ใช้ HTML5 Video element แทน Canvas เพื่อการเปิดกล้องที่เสถียรบน GitHub Pages */
-        #webcam-video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transform: scaleX(-1); /* กลับข้างซ้ายขวาให้เหมือนกระจกเงาธรรมชาติ */
+        #webcam-container canvas {
+            width: 100% !important; height: 100% !important; object-fit: cover;
         }
 
         #label-container {
-            width: 260px;
-            background: var(--card-bg);
-            backdrop-filter: blur(10px);
-            padding: 20px;
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            width: 220px; background: var(--card-bg); padding: 16px; border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
         }
 
         .label-item {
-            margin-bottom: 14px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #f1f5f9; padding: 8px 0;
         }
 
-        .label-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .info-text {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.95rem;
-            font-weight: 600;
-            margin-bottom: 6px;
-        }
-
-        .class-name {
-            color: #cbd5e1;
-        }
-
+        .label-item:last-child { border-bottom: none; }
+        .class-name { font-weight: 600; color: #475569; }
         .class-prob {
-            color: var(--neon-cyan);
-        }
-
-        .progress-bar-bg {
-            width: 100%;
-            height: 8px;
-            background-color: #334155;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .progress-bar-fill {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, var(--neon-cyan), #3b82f6);
-            box-shadow: 0 0 8px var(--neon-cyan);
-            transition: width 0.2s ease;
+            font-weight: bold; color: var(--primary-color); background-color: #eff6ff;
+            padding: 2px 8px; border-radius: 20px; font-size: 0.9rem;
         }
     </style>
 </head>
 <body>
 
-<div class="title">AI Radar Scanner</div>
+<div class="title">Teachable Machine Image Model</div>
+<div class="status-badge" id="status-text">ระบบกำลังเริ่มทำงานอัตโนมัติ...</div>
 
-<button type="button" class="btn-start" id="start-btn" onclick="init()">Initialize Scanner</button>
-
-<div id="webcam-container">
-    <!-- ใส่แท็ก Video รอไว้สำหรับรับสัญญาณสตรีมสดโดยตรงจากเบราว์เซอร์ -->
-    <video id="webcam-video" autoplay playsinline muted></video>
-</div>
-
+<div id="webcam-container"></div>
 <div id="label-container"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
 
 <script type="text/javascript">
-    const URL = "https://teachablemachine.withgoogle.com/models/XJJUyhxtL/";[cite: 4]
+    const URL = "https://teachablemachine.withgoogle.com/models/XJJUyhxtL/";
 
-    let model, maxPredictions, labelContainer;
-    const videoElement = document.getElementById("webcam-video");
+    let model, webcam, labelContainer, maxPredictions;
 
-    async function init() {
-        const btn = document.getElementById("start-btn");
-        btn.disabled = true;
-        btn.innerText = "Loading AI...";
-
+    // บังคับให้ระบบรันตั้งแต่เสี้ยววินาทีแรกที่เปิดเว็บขึ้นมา (ข้ามผ่านขั้นตอนคลิกปุ่มเพื่อเลี่ยงปัญหาสิทธิ์ค้าง)
+    window.onload = async function() {
+        const statusText = document.getElementById("status-text");
+        
         try {
-            // 1. โซลดโมเดล AI เตรียมพร้อมไว้ก่อน[cite: 4]
-            model = await tmImage.load(URL + "model.json", URL + "metadata.json");[cite: 4]
-            maxPredictions = model.getTotalClasses();[cite: 4]
+            // STEP 1: เรียกใช้สิทธิ์กล้องของตัวเบราว์เซอร์ล่วงหน้าก่อนเลย
+            statusText.innerText = "กำลังเข้าถึงกล้องเว็บแคม...";
+            const streamTest = await navigator.mediaDevices.getUserMedia({ video: true });
+            streamTest.getTracks().forEach(track => track.stop()); // ปิดตัวทดสอบเมื่อรู้ว่าผ่าน
 
-            // 2. ปรับปรุงการเปิดกล้อง: เรียกใช้งานผ่าน Native Web API เพื่อผ่านเงื่อนไขความปลอดภัยบน GitHub
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: { width: { ideal: 220 }, height: { ideal: 220 }, facingMode: "user" },
-                audio: false
-            });
+            // STEP 2: โหลดโครงสร้างโมเดลหลัก
+            statusText.innerText = "กำลังดาวน์โหลดไฟล์โมเดล AI...";
+            model = await tmImage.load(URL + "model.json", URL + "metadata.json");
+            maxPredictions = model.getTotalClasses();
+
+            // STEP 3: ส่งสิทธิ์ให้ Teachable Machine สร้าง Canvas กล้องขนาด 200x200
+            statusText.innerText = "กำลังประมวลผลวิดีโอสด...";
+            webcam = new tmImage.Webcam(200, 200, true);
+            await webcam.setup(); 
+            await webcam.play();
             
-            // นำภาพสตรีมสดเข้าแท็ก Video ทันที (วิธีนี้เบราว์เซอร์จะอนุญาตให้รันได้ง่ายและเสถียรที่สุด)
-            videoElement.srcObject = stream;
-
-            // 3. เตรียมโครงสร้างหลอดพลังงานอัปเดตผลลัพธ์
+            // แสดงหน้าจอกล้องลงบนเว็บ
+            document.getElementById("webcam-container").appendChild(webcam.canvas);
+            
+            // เตรียมกล่องคำตอบ
             labelContainer = document.getElementById("label-container");
-            labelContainer.innerHTML = ""; 
-            
-            for (let i = 0; i < maxPredictions; i++) {[cite: 4]
-                const itemDiv = document.createElement("div");
-                itemDiv.className = "label-item";
-                itemDiv.innerHTML = `
-                    <div class="info-text">
-                        <span class="class-name">Class ${i+1}</span>
-                        <span class="class-prob" id="prob-${i}">0%</span>
-                    </div>
-                    <div class="progress-bar-bg">
-                        <div class="progress-bar-fill" id="bar-${i}"></div>
-                    </div>
-                `;
-                labelContainer.appendChild(itemDiv);[cite: 4]
+            labelContainer.innerHTML = "";
+            for (let i = 0; i < maxPredictions; i++) {
+                const div = document.createElement("div");
+                div.className = "label-item";
+                labelContainer.appendChild(div);
             }
 
-            btn.innerText = "Scanner Online";
+            statusText.style.color = "#10b981";
+            statusText.style.backgroundColor = "#ecfdf5";
+            statusText.innerText = "● กล้องพร้อมทำงานเรียบร้อย";
             
-            // เริ่มต้นลูปการวิเคราะห์ภาพทำนายผล
             window.requestAnimationFrame(loop);
 
         } catch (error) {
-            console.error("GitHub Camera Error:", error);
-            alert("ไม่สามารถเข้าถึงกล้องได้บน GitHub Pages! กรุณาตรวจสอบให้แน่ใจว่าคุณเข้าเว็บด้วย 'https://' และกดยอมรับการเปิดใช้งานกล้องถ่ายรูป");
-            btn.disabled = false;
-            btn.innerText = "Initialize Scanner";
+            console.error(error);
+            statusText.style.color = "#ef4444";
+            statusText.style.backgroundColor = "#fef2f2";
+            statusText.innerHTML = `❌ เกิดข้อผิดพลาด: ${error.name}`;
+            alert("กล้องถูกบล็อกโดยระบบรักษาความปลอดภัย กรุณาตรวจเช็คการอนุญาตที่หน้าชื่อเว็บอีกครั้ง");
         }
-    }
+    };
 
     async function loop() {
-        // อัปเดตการตรวจจับคำนวณตลอดเวลา
+        webcam.update(); 
         await predict();
         window.requestAnimationFrame(loop);
     }
 
     async function predict() {
-        // เช็กว่าเฟรมวิดีโอสดโหลดเข้ามาสมบูรณ์หรือยัง
-        if (videoElement.readyState === videoElement.HAVE_ENOUGH_DATA) {
-            // โมเดลของ Teachable Machine สามารถรับภาพจากแท็ก <video> ไปทำนายผลตรง ๆ ได้แม่นยำเช่นกัน[cite: 4]
-            const prediction = await model.predict(videoElement);[cite: 4]
-            
-            for (let i = 0; i < maxPredictions; i++) {[cite: 4]
-                const className = prediction[i].className;[cite: 4]
-                const rawProbability = prediction[i].probability;
-                const percentage = (rawProbability * 100).toFixed(0);
-                
-                const probSpan = document.getElementById(`prob-${i}`);
-                if (probSpan) {
-                    probSpan.previousElementSibling.innerText = className;
-                    probSpan.innerText = percentage + "%";
-                }
-                
-                const barFill = document.getElementById(`bar-${i}`);
-                if (barFill) {
-                    barFill.style.width = percentage + "%";
-                    
-                    if (percentage > 70) {
-                        barFill.style.background = "linear-gradient(90deg, var(--neon-pink), #f43f5e)";
-                        barFill.style.boxShadow = "0 0 8px var(--neon-pink)";
-                    } else {
-                        barFill.style.background = "linear-gradient(90deg, var(--neon-cyan), #3b82f6)";
-                        barFill.style.boxShadow = "0 0 8px var(--neon-cyan)";
-                    }
-                }
-            }
+        const prediction = await model.predict(webcam.canvas);
+        for (let i = 0; i < maxPredictions; i++) {
+            const className = prediction[i].className;
+            const probability = (prediction[i].probability * 100).toFixed(0) + "%";
+            labelContainer.childNodes[i].innerHTML = `
+                <span class="class-name">${className}</span>
+                <span class="class-prob">${probability}</span>
+            `;
         }
     }
 </script>
