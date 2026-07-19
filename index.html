@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teachable Machine - Modern Style</title>
+    <title>Teachable Machine - Cyberpunk Radar Style</title>
     
     <style>
-        /* กำหนดธีมสีพาสเทลและฟอนต์ที่อ่านง่าย */
+        /* ธีมดาร์กไซเบอร์พังค์ เน้นสีเข้มนีออน */
         :root {
-            --bg-gradient: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
-            --card-bg: #ffffff;
-            --text-main: #334155;
-            --primary-color: #3b82f6;
-            --primary-hover: #2563eb;
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --neon-cyan: #06b6d4;
+            --neon-pink: #ec4899;
         }
 
         body {
@@ -28,120 +28,154 @@
             min-height: 100vh;
         }
 
-        /* หัวข้อเว็บ */
         .title {
-            font-size: 1.6rem;
-            font-weight: bold;
-            color: #1e3a8a;
-            margin-bottom: 20px;
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: var(--neon-cyan);
+            text-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
+            margin-bottom: 30px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
         }
 
-        /* ปุ่มกดดีไซน์โมเดิร์น */
+        /* ปุ่มกดดีไซน์ล้ำยุค */
         .btn-start {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
+            background: transparent;
+            color: var(--neon-pink);
+            border: 2px solid var(--neon-pink);
             padding: 12px 36px;
             font-size: 1.1rem;
             font-weight: bold;
-            border-radius: 50px;
+            border-radius: 12px;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
-            transition: all 0.2s ease;
-            margin-bottom: 24px;
+            box-shadow: 0 0 15px rgba(236, 72, 153, 0.2);
+            transition: all 0.3s ease;
+            margin-bottom: 30px;
+            text-transform: uppercase;
         }
 
         .btn-start:hover {
-            background-color: var(--primary-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
+            background-color: var(--neon-pink);
+            color: white;
+            box-shadow: 0 0 25px rgba(236, 72, 153, 0.6);
+            transform: scale(1.05);
         }
 
-        .btn-start:active {
-            transform: translateY(0);
+        .btn-start:disabled {
+            border-color: #475569;
+            color: #475569;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
-        /* กล่องใส่กล้องเว็บแคม (ขนาด 200x200 เท่าเดิม) */
+        /* รูปแบบกล้องใหม่: วงกลมสไตล์เรดาร์ สแกนเนอร์ */
         #webcam-container {
-            width: 200px;
-            height: 200px;
-            background-color: #f8fafc;
-            border-radius: 20px;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%; /* ปรับกล้องเป็นวงกลม */
             overflow: hidden;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            margin-bottom: 24px;
-            border: 4px solid #ffffff;
+            box-shadow: 0 0 30px rgba(6, 182, 212, 0.3);
+            margin-bottom: 30px;
+            border: 4px solid var(--neon-cyan);
+            position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        /* บังคับให้ภาพ Canvas เต็มกล่องพอดี */
+        /* เอฟเฟกต์เส้นเรดาร์สแกนวิ่งผ่านหน้าจอกล้อง */
+        #webcam-container::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 3px;
+            background: var(--neon-cyan);
+            box-shadow: 0 0 10px var(--neon-cyan);
+            opacity: 0.7;
+            animation: radar-scan 2.5s linear infinite;
+        }
+
+        @keyframes radar-scan {
+            0% { top: 0%; }
+            50% { top: 100%; }
+            100% { top: 0%; }
+        }
+
         #webcam-container canvas {
             width: 100% !important;
             height: 100% !important;
             object-fit: cover;
         }
 
-        /* กล่องแสดงผลลัพธ์ */
+        /* กล่องแสดงผลลัพธ์พร้อมแถบกราฟ */
         #label-container {
-            width: 220px;
+            width: 260px;
             background: var(--card-bg);
-            padding: 16px;
+            backdrop-filter: blur(10px);
+            padding: 20px;
             border-radius: 16px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
         }
 
-        /* จัดแต่งแถบแสดงคลาสย่อย */
         .label-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #f1f5f9;
-            padding: 8px 0;
-            font-size: 1rem;
+            margin-bottom: 14px;
         }
 
         .label-item:last-child {
-            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .info-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 6px;
         }
 
         .class-name {
-            font-weight: 600;
-            color: #475569;
+            color: #cbd5e1;
         }
 
         .class-prob {
-            font-weight: bold;
-            color: var(--primary-color);
-            background-color: #eff6ff;
-            padding: 2px 8px;
-            border-radius: 20px;
-            font-size: 0.9rem;
+            color: var(--neon-cyan);
+        }
+
+        /* แถบหลอดพลังงานแสดงเปอร์เซ็นต์ */
+        .progress-bar-bg {
+            width: 100%;
+            height: 8px;
+            background-color: #334155;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--neon-cyan), #3b82f6);
+            box-shadow: 0 0 8px var(--neon-cyan);
+            transition: width 0.2s ease;
         }
     </style>
 </head>
 <body>
 
-<div class="title">Teachable Machine Image Model</div>
+<div class="title">AI Radar Scanner</div>
 
-<!-- เปลี่ยนเป็นปุ่มแบบมี ID เพื่อจัดสไตล์ง่ายขึ้น -->
-<button type="button" class="btn-start" id="start-btn" onclick="init()">Start System</button>
+<button type="button" class="btn-start" id="start-btn" onclick="init()">Initialize Scanner</button>
 
-<!-- พื้นที่แสดงกล้องเว็บแคม -->
+<!-- กล้องรูปแบบวงกลมเรดาร์ -->
 <div id="webcam-container"></div>
 
-<!-- พื้นที่แสดงผลลัพธ์การทำนาย -->
+<!-- กล่องแสดงผลลัพธ์ดีไซน์ใหม่แบบมีหลอดความมั่นใจ -->
 <div id="label-container"></div>
 
-<!-- เรียกใช้ไลบรารีตามต้นฉบับของคุณ -->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
 
 <script type="text/javascript">
-    // ลิงก์โมเดลเดิมของคุณ
     const URL = "https://teachablemachine.withgoogle.com/models/XJJUyhxtL/";[cite: 4]
 
     let model, webcam, labelContainer, maxPredictions;
@@ -149,42 +183,46 @@
     async function init() {
         const btn = document.getElementById("start-btn");
         btn.disabled = true;
-        btn.innerText = "Loading...";
-
-        const modelURL = URL + "model.json";[cite: 4]
-        const metadataURL = URL + "metadata.json";[cite: 4]
+        btn.innerText = "Loading AI...";
 
         try {
-            // โหลดโมเดลและเมทาดาตา[cite: 4]
-            model = await tmImage.load(modelURL, metadataURL);[cite: 4]
+            model = await tmImage.load(URL + "model.json", URL + "metadata.json");[cite: 4]
             maxPredictions = model.getTotalClasses();[cite: 4]
 
-            // ตั้งค่ากล้องเว็บแคม (ขนาด 200x200 และกลับด้านซ้ายขวา)[cite: 4]
-            const flip = true;[cite: 4]
-            webcam = new tmImage.Webcam(200, 200, flip);[cite: 4]
+            const flip = true; 
+            webcam = new tmImage.Webcam(220, 220, flip);[cite: 4]
             await webcam.setup();[cite: 4]
             await webcam.play();[cite: 4]
             window.requestAnimationFrame(loop);[cite: 4]
 
-            // นำตัวเล่นกล้องไปใส่ใน DOM[cite: 4]
             document.getElementById("webcam-container").appendChild(webcam.canvas);[cite: 4]
             
-            // เตรียมพื้นที่แสดงผลสำหรับแต่ละคลาส[cite: 4]
             labelContainer = document.getElementById("label-container");
-            labelContainer.innerHTML = ""; // ล้างข้อมูลเก่า (ถ้ามี)
+            labelContainer.innerHTML = ""; 
+            
+            // สร้างโครงสร้างแถบความมั่นใจ (Progress Bar) ตามจำนวนคลาส
             for (let i = 0; i < maxPredictions; i++) {[cite: 4]
-                const div = document.createElement("div");
-                div.className = "label-item";
-                labelContainer.appendChild(div);[cite: 4]
+                const itemDiv = document.createElement("div");
+                itemDiv.className = "label-item";
+                itemDiv.innerHTML = `
+                    <div class="info-text">
+                        <span class="class-name">Class ${i+1}</span>
+                        <span class="class-prob" id="prob-${i}">0%</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="bar-${i}"></div>
+                    </div>
+                `;
+                labelContainer.appendChild(itemDiv);[cite: 4]
             }
 
-            btn.innerText = "System Active";
+            btn.innerText = "Scanner Online";
 
         } catch (error) {
             console.error(error);
-            alert("ไม่สามารถเปิดกล้องได้ กรุณาตรวจสอบการอนุญาตให้เข้าถึงกล้องถ่ายรูป");
+            alert("ไม่สามารถเข้าถึงกล้องได้ กรุณาตรวจสอบสิทธิ์การใช้งานกล้อง");
             btn.disabled = false;
-            btn.innerText = "Start System";
+            btn.innerText = "Initialize Scanner";
         }
     }
 
@@ -198,14 +236,30 @@
         const prediction = await model.predict(webcam.canvas);[cite: 4]
         for (let i = 0; i < maxPredictions; i++) {[cite: 4]
             const className = prediction[i].className;[cite: 4]
-            // แปลงค่าความน่าจะเป็นให้อยู่ในรูปเปอร์เซ็นต์แบบไม่มีทศนิยมเพื่อให้ดูง่าย
-            const probability = (prediction[i].probability * 100).toFixed(0) + "%";
+            const rawProbability = prediction[i].probability;
+            const percentage = (rawProbability * 100).toFixed(0);
             
-            // แสดงผลลัพธ์แยกชื่อคลาสและเปอร์เซ็นต์ซ้าย-ขวาอย่างสวยงาม
-            labelContainer.childNodes[i].innerHTML = `
-                <span class="class-name">${className}</span>
-                <span class="class-prob">${probability}</span>
-            `;
+            // อัปเดตชื่อคลาสและตัวเลขเปอร์เซ็นต์
+            const probSpan = document.getElementById(`prob-${i}`);
+            if (probSpan) {
+                probSpan.previousElementSibling.innerText = className;
+                probSpan.innerText = percentage + "%";
+            }
+            
+            // ขยับความยาวของหลอดความมั่นใจตามค่าที่ AI ทำนายได้แบบสมูท
+            const barFill = document.getElementById(`bar-${i}`);
+            if (barFill) {
+                barFill.style.width = percentage + "%";
+                
+                // ลูกเล่นเปลี่ยนสีหลอด: ถ้ามั่นใจเกิน 70% ให้เปลี่ยนเป็นสีชมพูนีออนเพื่อเตือนความเด่นชัด
+                if (percentage > 70) {
+                    barFill.style.background = "linear-gradient(90deg, var(--neon-pink), #f43f5e)";
+                    barFill.style.boxShadow = "0 0 8px var(--neon-pink)";
+                } else {
+                    barFill.style.background = "linear-gradient(90deg, var(--neon-cyan), #3b82f6)";
+                    barFill.style.boxShadow = "0 0 8px var(--neon-cyan)";
+                }
+            }
         }
     }
 </script>
