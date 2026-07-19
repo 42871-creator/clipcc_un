@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teachable Machine - Cyberpunk Radar Style</title>
+    <title>AI Radar Scanner - GitHub Pages Fix</title>
     
     <style>
         /* ธีมดาร์กไซเบอร์พังค์ เน้นสีเข้มนีออน */
@@ -38,7 +38,6 @@
             letter-spacing: 2px;
         }
 
-        /* ปุ่มกดดีไซน์ล้ำยุค */
         .btn-start {
             background: transparent;
             color: var(--neon-pink);
@@ -69,11 +68,11 @@
             box-shadow: none;
         }
 
-        /* รูปแบบกล้องใหม่: วงกลมสไตล์เรดาร์ สแกนเนอร์ */
+        /* กล้องทรงวงกลมเรดาร์สแกน */
         #webcam-container {
             width: 220px;
             height: 220px;
-            border-radius: 50%; /* ปรับกล้องเป็นวงกลม */
+            border-radius: 50%;
             overflow: hidden;
             box-shadow: 0 0 30px rgba(6, 182, 212, 0.3);
             margin-bottom: 30px;
@@ -82,9 +81,10 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            background-color: #000;
         }
 
-        /* เอฟเฟกต์เส้นเรดาร์สแกนวิ่งผ่านหน้าจอกล้อง */
+        /* เอฟเฟกต์เส้นเรดาร์วิ่งผ่านหน้าจอ */
         #webcam-container::after {
             content: '';
             position: absolute;
@@ -93,6 +93,7 @@
             box-shadow: 0 0 10px var(--neon-cyan);
             opacity: 0.7;
             animation: radar-scan 2.5s linear infinite;
+            pointer-events: none;
         }
 
         @keyframes radar-scan {
@@ -101,13 +102,14 @@
             100% { top: 0%; }
         }
 
-        #webcam-container canvas {
-            width: 100% !important;
-            height: 100% !important;
+        /* ปรับปรุง: ใช้ HTML5 Video element แทน Canvas เพื่อการเปิดกล้องที่เสถียรบน GitHub Pages */
+        #webcam-video {
+            width: 100%;
+            height: 100%;
             object-fit: cover;
+            transform: scaleX(-1); /* กลับข้างซ้ายขวาให้เหมือนกระจกเงาธรรมชาติ */
         }
 
-        /* กล่องแสดงผลลัพธ์พร้อมแถบกราฟ */
         #label-container {
             width: 260px;
             background: var(--card-bg);
@@ -142,7 +144,6 @@
             color: var(--neon-cyan);
         }
 
-        /* แถบหลอดพลังงานแสดงเปอร์เซ็นต์ */
         .progress-bar-bg {
             width: 100%;
             height: 8px;
@@ -166,10 +167,11 @@
 
 <button type="button" class="btn-start" id="start-btn" onclick="init()">Initialize Scanner</button>
 
-<!-- กล้องรูปแบบวงกลมเรดาร์ -->
-<div id="webcam-container"></div>
+<div id="webcam-container">
+    <!-- ใส่แท็ก Video รอไว้สำหรับรับสัญญาณสตรีมสดโดยตรงจากเบราว์เซอร์ -->
+    <video id="webcam-video" autoplay playsinline muted></video>
+</div>
 
-<!-- กล่องแสดงผลลัพธ์ดีไซน์ใหม่แบบมีหลอดความมั่นใจ -->
 <div id="label-container"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
@@ -178,7 +180,8 @@
 <script type="text/javascript">
     const URL = "https://teachablemachine.withgoogle.com/models/XJJUyhxtL/";[cite: 4]
 
-    let model, webcam, labelContainer, maxPredictions;
+    let model, maxPredictions, labelContainer;
+    const videoElement = document.getElementById("webcam-video");
 
     async function init() {
         const btn = document.getElementById("start-btn");
@@ -186,21 +189,23 @@
         btn.innerText = "Loading AI...";
 
         try {
+            // 1. โซลดโมเดล AI เตรียมพร้อมไว้ก่อน[cite: 4]
             model = await tmImage.load(URL + "model.json", URL + "metadata.json");[cite: 4]
             maxPredictions = model.getTotalClasses();[cite: 4]
 
-            const flip = true; 
-            webcam = new tmImage.Webcam(220, 220, flip);[cite: 4]
-            await webcam.setup();[cite: 4]
-            await webcam.play();[cite: 4]
-            window.requestAnimationFrame(loop);[cite: 4]
-
-            document.getElementById("webcam-container").appendChild(webcam.canvas);[cite: 4]
+            // 2. ปรับปรุงการเปิดกล้อง: เรียกใช้งานผ่าน Native Web API เพื่อผ่านเงื่อนไขความปลอดภัยบน GitHub
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { width: { ideal: 220 }, height: { ideal: 220 }, facingMode: "user" },
+                audio: false
+            });
             
+            // นำภาพสตรีมสดเข้าแท็ก Video ทันที (วิธีนี้เบราว์เซอร์จะอนุญาตให้รันได้ง่ายและเสถียรที่สุด)
+            videoElement.srcObject = stream;
+
+            // 3. เตรียมโครงสร้างหลอดพลังงานอัปเดตผลลัพธ์
             labelContainer = document.getElementById("label-container");
             labelContainer.innerHTML = ""; 
             
-            // สร้างโครงสร้างแถบความมั่นใจ (Progress Bar) ตามจำนวนคลาส
             for (let i = 0; i < maxPredictions; i++) {[cite: 4]
                 const itemDiv = document.createElement("div");
                 itemDiv.className = "label-item";
@@ -217,47 +222,52 @@
             }
 
             btn.innerText = "Scanner Online";
+            
+            // เริ่มต้นลูปการวิเคราะห์ภาพทำนายผล
+            window.requestAnimationFrame(loop);
 
         } catch (error) {
-            console.error(error);
-            alert("ไม่สามารถเข้าถึงกล้องได้ กรุณาตรวจสอบสิทธิ์การใช้งานกล้อง");
+            console.error("GitHub Camera Error:", error);
+            alert("ไม่สามารถเข้าถึงกล้องได้บน GitHub Pages! กรุณาตรวจสอบให้แน่ใจว่าคุณเข้าเว็บด้วย 'https://' และกดยอมรับการเปิดใช้งานกล้องถ่ายรูป");
             btn.disabled = false;
             btn.innerText = "Initialize Scanner";
         }
     }
 
     async function loop() {
-        webcam.update();[cite: 4]
-        await predict();[cite: 4]
-        window.requestAnimationFrame(loop);[cite: 4]
+        // อัปเดตการตรวจจับคำนวณตลอดเวลา
+        await predict();
+        window.requestAnimationFrame(loop);
     }
 
     async function predict() {
-        const prediction = await model.predict(webcam.canvas);[cite: 4]
-        for (let i = 0; i < maxPredictions; i++) {[cite: 4]
-            const className = prediction[i].className;[cite: 4]
-            const rawProbability = prediction[i].probability;
-            const percentage = (rawProbability * 100).toFixed(0);
+        // เช็กว่าเฟรมวิดีโอสดโหลดเข้ามาสมบูรณ์หรือยัง
+        if (videoElement.readyState === videoElement.HAVE_ENOUGH_DATA) {
+            // โมเดลของ Teachable Machine สามารถรับภาพจากแท็ก <video> ไปทำนายผลตรง ๆ ได้แม่นยำเช่นกัน[cite: 4]
+            const prediction = await model.predict(videoElement);[cite: 4]
             
-            // อัปเดตชื่อคลาสและตัวเลขเปอร์เซ็นต์
-            const probSpan = document.getElementById(`prob-${i}`);
-            if (probSpan) {
-                probSpan.previousElementSibling.innerText = className;
-                probSpan.innerText = percentage + "%";
-            }
-            
-            // ขยับความยาวของหลอดความมั่นใจตามค่าที่ AI ทำนายได้แบบสมูท
-            const barFill = document.getElementById(`bar-${i}`);
-            if (barFill) {
-                barFill.style.width = percentage + "%";
+            for (let i = 0; i < maxPredictions; i++) {[cite: 4]
+                const className = prediction[i].className;[cite: 4]
+                const rawProbability = prediction[i].probability;
+                const percentage = (rawProbability * 100).toFixed(0);
                 
-                // ลูกเล่นเปลี่ยนสีหลอด: ถ้ามั่นใจเกิน 70% ให้เปลี่ยนเป็นสีชมพูนีออนเพื่อเตือนความเด่นชัด
-                if (percentage > 70) {
-                    barFill.style.background = "linear-gradient(90deg, var(--neon-pink), #f43f5e)";
-                    barFill.style.boxShadow = "0 0 8px var(--neon-pink)";
-                } else {
-                    barFill.style.background = "linear-gradient(90deg, var(--neon-cyan), #3b82f6)";
-                    barFill.style.boxShadow = "0 0 8px var(--neon-cyan)";
+                const probSpan = document.getElementById(`prob-${i}`);
+                if (probSpan) {
+                    probSpan.previousElementSibling.innerText = className;
+                    probSpan.innerText = percentage + "%";
+                }
+                
+                const barFill = document.getElementById(`bar-${i}`);
+                if (barFill) {
+                    barFill.style.width = percentage + "%";
+                    
+                    if (percentage > 70) {
+                        barFill.style.background = "linear-gradient(90deg, var(--neon-pink), #f43f5e)";
+                        barFill.style.boxShadow = "0 0 8px var(--neon-pink)";
+                    } else {
+                        barFill.style.background = "linear-gradient(90deg, var(--neon-cyan), #3b82f6)";
+                        barFill.style.boxShadow = "0 0 8px var(--neon-cyan)";
+                    }
                 }
             }
         }
